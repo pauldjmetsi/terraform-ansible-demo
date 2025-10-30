@@ -1,0 +1,52 @@
+name: Terraform + Ansible CI/CD
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_REGION: eu-west-2
+      TF_IN_AUTOMATION: true
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.8.5
+
+      - name: Terraform Init
+        working-directory: ./terraform
+        run: terraform init -backend-config="bucket=my-tf-state" -backend-config="region=eu-west-2"
+
+      - name: Terraform Plan
+        working-directory: ./terraform
+        run: terraform plan -out=tfplan
+
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main'
+        working-directory: ./terraform
+        run: terraform apply -auto-approve tfplan
+
+      - name: Extract Terraform Outputs
+        id: tfoutputs
+        working-directory: ./terraform
+        run: |
+          echo "EC2_IP=$(terraform output -raw web_instance_ip)" >> $GITHUB_ENV
+
+      - name: Setup Ansible
+        run: |
+          sudo apt update && sudo apt install -y ansible
+
+      - name: Configure Web Server via Ansible
+        working-directory: ./ansible
+        run: |
+          ansible-playbook -i "${EC2_IP}," playbooks/configure_app.yml --user ec2-user --private-key ~/.ssh/id_rsa
