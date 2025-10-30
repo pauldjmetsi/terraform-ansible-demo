@@ -3,8 +3,12 @@
   hosts: all
   become: true
   tasks:
-    - name: Install Nginx (cross-platform)
-      package:
+    - name: Update APT cache
+      apt:
+        update_cache: yes
+
+    - name: Install Nginx
+      apt:
         name: nginx
         state: present
 
