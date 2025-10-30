@@ -1,6 +1,6 @@
 ---
 - name: Configure web server
-  hosts: tag_Name_web-server
+  hosts: all
   become: true
   tasks:
     - name: Install Nginx
