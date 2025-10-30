@@ -15,7 +15,3 @@ resource "aws_instance" "web" {
     Name = "web-server"
   }
 }
-
-output "web_instance_ip" {
-  value = aws_instance.web.public_ip
-}
