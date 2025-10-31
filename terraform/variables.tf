@@ -39,3 +39,9 @@ variable "key_name" {
   description = "Name of the existing SSH key pair"
   type        = string
 }
+
+variable "environment" {
+  description = "Deployment environment"
+  type        = string
+  default     = "dev"
+}

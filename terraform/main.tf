@@ -13,5 +13,8 @@ resource "aws_instance" "web" {
 
   tags = {
     Name = "web-server"
+    Environment = var.environment
+    Role = "web"
+    ManagedBy = "Terraform"
   }
 }
