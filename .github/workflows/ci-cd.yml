@@ -67,7 +67,7 @@ jobs:
       - name: Configure Web Server via Ansible
         working-directory: ./ansible
         run: |
-          ansible-playbook -i ansible/inventory/dynamic_aws_ec2.yml \
+          ansible-playbook -i inventory/dynamic_aws_ec2.yml \
           playbooks/configure_app.yml \
           --user ubuntu \
           --private-key ~/.ssh/id_rsa \
