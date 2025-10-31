@@ -54,26 +54,35 @@ jobs:
         run: |
           echo "EC2_IP=$(terraform output -raw web_instance_ip)" >> $GITHUB_ENV
 
-      - name: Install Ansible dependencies
-        run: |
-          pip install boto3 botocore
-          ansible-galaxy collection install amazon.aws
-
+            # --- Install Ansible ---
       - name: Setup Ansible
         run: |
           sudo apt update && sudo apt install -y ansible
 
+      # --- Inject boto3/botocore into Ansible's Python environment ---
+      - name: Install Ansible dependencies
+        run: |
+          pipx inject ansible-core boto3 botocore
+          ansible-galaxy collection install amazon.aws
+
+      # --- Configure SSH key ---
       - name: Configure SSH key for Ansible
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.AWS_CLOUDBOLT_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
+      # --- Run Ansible playbook ---
       - name: Configure Web Server via Ansible
         working-directory: ./ansible
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ vars.AWS_REGION }}
         run: |
           ansible-playbook -i inventory/dynamic_aws_ec2.yml \
           playbooks/configure_app.yml \
           --user ubuntu \
           --private-key ~/.ssh/id_rsa \
           --ssh-extra-args="-o StrictHostKeyChecking=no"
+
