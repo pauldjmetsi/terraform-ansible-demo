@@ -54,6 +54,11 @@ jobs:
         run: |
           echo "EC2_IP=$(terraform output -raw web_instance_ip)" >> $GITHUB_ENV
 
+      - name: Install Ansible dependencies
+        run: |
+          pip install boto3 botocore
+          ansible-galaxy collection install amazon.aws
+
       - name: Setup Ansible
         run: |
           sudo apt update && sudo apt install -y ansible
